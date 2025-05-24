@@ -1,0 +1,19 @@
+{
+	"name": "xcode build server",
+	"version": "0.2",
+	"bspVersion": "2.0",
+	"languages": [
+		"c",
+		"cpp",
+		"objective-c",
+		"objective-cpp",
+		"swift"
+	],
+	"argv": [
+		"/opt/homebrew/bin/xcode-build-server"
+	],
+	"workspace": "/Users/oftp/Desktop/TaskMate/TaskMate.xcodeproj/project.xcworkspace",
+	"build_root": "/Users/oftp/Library/Developer/Xcode/DerivedData/TaskMate-hbglfyxtaoacpqdigshzffvmvpjh",
+	"scheme": "TaskMate",
+	"kind": "xcode"
+}
