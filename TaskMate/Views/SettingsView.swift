@@ -2,16 +2,139 @@ import SwiftUI
 
 struct SettingsView: View {
     // MARK: - Properties
+    @State private var nickname: String = "Vanessa"
+    @State private var mobile: String = "+233245678910"
+    @State private var showEdit = false
+    @State private var showFeedback = false
+    @State private var feedbackText = ""
+    @State private var notificationsEnabled = true
+    @State private var showLogoutAlert = false
+    @State private var profileImage: Image? = Image(systemName: "person.crop.circle.fill")
+    @State private var showImagePicker = false
     
     // MARK: - Body
     var body: some View {
         NavigationStack {
-            VStack {
-                Text("Settings")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
+            Form {
+                // Profile Section
+                Section {
+                    HStack(spacing: 16) {
+                        profileImage?
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 64, height: 64)
+                            .clipShape(Circle())
+                            .onTapGesture {
+                                print("[DEBUG] Profile image tapped")
+                                showImagePicker = true
+                            }
+                            .accessibilityLabel("Profile Picture")
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(nickname)
+                                .font(.headline)
+                            Text(mobile)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Button(action: {
+                            print("[DEBUG] Edit profile tapped")
+                            showEdit = true
+                        }) {
+                            Image(systemName: "pencil")
+                        }
+                        .accessibilityLabel("Edit Profile")
+                    }
+                }
+                // Notification Toggle
+                Section(header: Text("Notifications")) {
+                    Toggle(isOn: $notificationsEnabled) {
+                        Text("Enable Notifications")
+                    }
+                    .onChange(of: notificationsEnabled) { value in
+                        print("[DEBUG] Notifications toggled: \(value)")
+                    }
+                }
+                // Feedback
+                Section(header: Text("Feedback")) {
+                    Button("Send Feedback") {
+                        print("[DEBUG] Feedback tapped")
+                        showFeedback = true
+                    }
+                }
+                // Logout
+                Section {
+                    Button(role: .destructive) {
+                        print("[DEBUG] Logout tapped")
+                        showLogoutAlert = true
+                    } label: {
+                        Text("Log out")
+                    }
+                }
             }
-            .navigationTitle("Settings")
+            .navigationTitle("Profile")
+            // Edit Profile Modal
+            .sheet(isPresented: $showEdit) {
+                NavigationStack {
+                    Form {
+                        TextField("Nickname", text: $nickname)
+                        TextField("Mobile Number", text: $mobile)
+                            .keyboardType(.phonePad)
+                    }
+                    .navigationTitle("Edit Profile")
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") {
+                                print("[DEBUG] Profile updated: \(nickname), \(mobile)")
+                                showEdit = false
+                            }
+                        }
+                    }
+                }
+            }
+            // Feedback Modal
+            .sheet(isPresented: $showFeedback) {
+                NavigationStack {
+                    Form {
+                        TextField("Your feedback...", text: $feedbackText, axis: .vertical)
+                            .lineLimit(4...8)
+                        Button("Send Feedback") {
+                            print("[DEBUG] Feedback sent: \(feedbackText)")
+                            showFeedback = false
+                            feedbackText = ""
+                        }
+                        .disabled(feedbackText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                    .navigationTitle("Send Feedback")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Cancel") {
+                                showFeedback = false
+                            }
+                        }
+                    }
+                }
+            }
+            // Logout Alert
+            .alert("Are you sure you want to log out?", isPresented: $showLogoutAlert) {
+                Button("Log out", role: .destructive) {
+                    print("[DEBUG] User logged out")
+                    // TODO: Clear session and redirect to login
+                }
+                Button("Cancel", role: .cancel) {}
+            }
+            // Image Picker (placeholder)
+            .sheet(isPresented: $showImagePicker) {
+                VStack(spacing: 24) {
+                    Text("Image picker coming soon")
+                        .font(.title2)
+                        .foregroundColor(.secondary)
+                    Button("Close") {
+                        showImagePicker = false
+                    }
+                }
+                .padding()
+            }
         }
     }
 }

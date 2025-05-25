@@ -1,7 +1,7 @@
 import SwiftUI
 
 @Observable
-final class DashboardViewModel {
+final class DashboardViewModel: ObservableObject {
     // MARK: - Properties
     // User info
     var userName: String = "Vanessa"

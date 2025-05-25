@@ -2,8 +2,10 @@ import SwiftUI
 
 struct DashboardView: View {
     // MARK: - Properties
-    let model = DashboardViewModel()
+    @StateObject private var model = DashboardViewModel()
     @State private var showNewModal = false
+    @State private var showProjectEdit = false
+    @State private var selectedProject: DashboardViewModel.Project? = nil
     
     // MARK: - Body
     var body: some View {
@@ -35,7 +37,7 @@ struct DashboardView: View {
                             ForEach(model.projects) { project in
                                 Button(action: {
                                     print("[DEBUG] Project tapped: \(project.name)")
-                                    // TODO: Navigate to Project Details
+                                    selectedProject = project
                                 }) {
                                     VStack(alignment: .leading, spacing: 8) {
                                         Text(project.name)
@@ -132,7 +134,6 @@ struct DashboardView: View {
             )
             // Modal for new task/project
             .sheet(isPresented: $showNewModal) {
-                // TODO: Implement NewTaskOrProjectView
                 VStack(spacing: 24) {
                     Text("Create New")
                         .font(.title2)
@@ -150,6 +151,7 @@ struct DashboardView: View {
                     Button("New Project") {
                         print("[DEBUG] New Project selected")
                         showNewModal = false
+                        showProjectEdit = true
                     }
                     .font(.headline)
                     .frame(maxWidth: .infinity)
@@ -163,6 +165,25 @@ struct DashboardView: View {
                     .foregroundColor(.red)
                 }
                 .padding()
+            }
+            // Project creation modal
+            .sheet(isPresented: $showProjectEdit) {
+                ProjectEditView { name, description, start, end, members in
+                    print("[DEBUG] Project created: \(name)")
+                    let newProject = DashboardViewModel.Project(
+                        id: UUID(),
+                        name: name,
+                        color: .yellow, // TODO: Let user pick color
+                        progress: 0.0,
+                        dueDate: end,
+                        tasks: []
+                    )
+                    model.addProject(newProject)
+                }
+            }
+            // Project details navigation
+            .sheet(item: $selectedProject) { project in
+                ProjectDetailView(project: project)
             }
         }
     }
