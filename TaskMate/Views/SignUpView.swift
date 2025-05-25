@@ -2,11 +2,13 @@ import SwiftUI
 
 struct SignUpView: View {
     // MARK: - Properties
-    @State private var phoneNumber: String = ""
-    @State private var countryCode: String = "+233"
+    @State private var email: String = ""
+    @State private var password: String = ""
     @State private var nickname: String = ""
     @State private var showVerification = false
     @State private var showSignIn = false
+    @State private var isLoading = false
+    @State var authModel: AuthViewModel = AuthViewModel()
     var onAuthenticated: (() -> Void)? = nil
     
     // MARK: - Body
@@ -19,34 +21,53 @@ struct SignUpView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top, 32)
-                // Phone input
-                HStack {
-                    TextField("+233", text: $countryCode)
-                        .frame(width: 60)
-                        .keyboardType(.phonePad)
-                        .textFieldStyle(.roundedBorder)
-                        .accessibilityLabel("Country Code")
-                    TextField("Enter your mobile number", text: $phoneNumber)
-                        .keyboardType(.phonePad)
-                        .textFieldStyle(.roundedBorder)
-                        .accessibilityLabel("Mobile Number")
-                }
+                // Email input
+                TextField("Email", text: $email)
+                    .keyboardType(.emailAddress)
+                    .textFieldStyle(.roundedBorder)
+                    .autocapitalization(.none)
+                    .accessibilityLabel("Email")
+                // Password input
+                SecureField("Password", text: $password)
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityLabel("Password")
                 // Nickname input
                 TextField("Nickname", text: $nickname)
                     .textFieldStyle(.roundedBorder)
                     .accessibilityLabel("Nickname")
+                // Error message
+                if let error = authModel.errorMessage {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                }
                 // Sign Up button
                 Button(action: {
-                    print("[DEBUG] Sign Up tapped. Phone: \(countryCode)\(phoneNumber), Nickname: \(nickname)")
-                    showVerification = true
+                    print("[DEBUG] Sign Up tapped. Email: \(email), Nickname: \(nickname)")
+                    guard !nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                        authModel.errorMessage = "Nickname is required."
+                        return
+                    }
+                    isLoading = true
+                    authModel.signUp(email: email, password: password, nickname: nickname) { success in
+                        isLoading = false
+                        if success {
+                            showVerification = true
+                            onAuthenticated?()
+                        }
+                    }
                 }) {
-                    Text("Sign Up")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.purple)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
+                    if isLoading {
+                        ProgressView()
+                    } else {
+                        Text("Sign Up")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.purple)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                    }
                 }
                 .padding(.top)
                 .accessibilityLabel("Sign Up")
@@ -68,7 +89,7 @@ struct SignUpView: View {
                 VerificationView(onAuthenticated: onAuthenticated)
             }
             .navigationDestination(isPresented: $showSignIn) {
-                SignInView()
+                SignInView(authModel: authModel)
             }
         }
     }

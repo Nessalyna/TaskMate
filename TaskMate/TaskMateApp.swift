@@ -6,26 +6,51 @@
 //
 
 import SwiftUI
+import FirebaseCore
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+  func application(_ application: UIApplication,
+                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    FirebaseApp.configure()
+    return true
+  }
+}
 
 @main
 struct TaskMateApp: App {
     // MARK: - Properties
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
-    @AppStorage("isAuthenticated") private var isAuthenticated = false
-    
+    // Use a shared AuthViewModel for the app
+    @State private var authModel = AuthViewModel()
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+
     // MARK: - Body
     var body: some Scene {
         WindowGroup {
-            if !hasSeenOnboarding {
-                OnboardingView()
-            } else if !isAuthenticated {
-                SignUpView(onAuthenticated: {
-                    isAuthenticated = true
-                })
-            } else {
-                ContentView()
-                    .environment(\.colorScheme, .light) // Default to light mode
-            }
+            // Call checkSession() on launch
+            RootView(authModel: authModel, hasSeenOnboarding: $hasSeenOnboarding)
+                .environment(\.colorScheme, .light) // Default to light mode
+                .onAppear {
+                    print("[DEBUG] App launched, checking session...")
+                    authModel.checkSession()
+                }
+        }
+    }
+}
+
+// RootView handles onboarding, auth, and main content
+struct RootView: View {
+    @Bindable var authModel: AuthViewModel
+    @Binding var hasSeenOnboarding: Bool
+    var body: some View {
+        if !hasSeenOnboarding {
+            OnboardingView()
+        } else if !authModel.isAuthenticated {
+            SignUpView(authModel: authModel, onAuthenticated: {
+                authModel.checkSession()
+            })
+        } else {
+            ContentView()
         }
     }
 }

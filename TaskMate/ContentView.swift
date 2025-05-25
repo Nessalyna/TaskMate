@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var showProfile = false
     @State private var navigationPath = NavigationPath()
     @StateObject private var model = DashboardViewModel()
+    @State var authModel: AuthViewModel = AuthViewModel()
     
     // MARK: - Body
     var body: some View {
@@ -27,7 +28,7 @@ struct ContentView: View {
                             onAddTask: { navigationPath.append("newTask") },
                             onProjectTapped: { navigationPath.append($0) },
                             onTaskTapped: { navigationPath.append($0) },
-                            onProfileTapped: { showProfile = true }
+                            onProfileTapped: { navigationPath.append("settings") }
                         )
                     case 1:
                         DashboardView(
@@ -36,7 +37,7 @@ struct ContentView: View {
                             onAddTask: { navigationPath.append("newTask") },
                             onProjectTapped: { navigationPath.append($0) },
                             onTaskTapped: { navigationPath.append($0) },
-                            onProfileTapped: { showProfile = true }
+                            onProfileTapped: { navigationPath.append("settings") }
                         )
                     case 2:
                         NotificationsView()
@@ -47,7 +48,7 @@ struct ContentView: View {
                             onAddTask: { navigationPath.append("newTask") },
                             onProjectTapped: { navigationPath.append($0) },
                             onTaskTapped: { navigationPath.append($0) },
-                            onProfileTapped: { showProfile = true }
+                            onProfileTapped: { navigationPath.append("settings") }
                         )
                     }
                 }
@@ -131,6 +132,8 @@ struct ContentView: View {
                         model.addProject(newProject)
                         navigationPath = NavigationPath()
                     }, onCancel: { navigationPath = NavigationPath() })
+                } else if route == "settings" {
+                    SettingsView(authModel: authModel)
                 } else {
                     EmptyView()
                 }
@@ -140,9 +143,6 @@ struct ContentView: View {
             }
             .navigationDestination(for: Task.self) { task in
                 TaskDetailView(task: task)
-            }
-            .sheet(isPresented: $showProfile) {
-                SettingsView()
             }
         }
     }

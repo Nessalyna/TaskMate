@@ -2,11 +2,13 @@ import SwiftUI
 
 struct SignInView: View {
     // MARK: - Properties
-    @State private var phoneNumber: String = ""
-    @State private var countryCode: String = "+233"
+    @State private var email: String = ""
+    @State private var password: String = ""
     @State private var showDashboard = false
     @State private var showSignUp = false
-    
+    @State private var isLoading = false
+    @State var authModel: AuthViewModel
+
     // MARK: - Body
     var body: some View {
         NavigationStack {
@@ -17,30 +19,44 @@ struct SignInView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.top, 32)
-                // Phone input
-                HStack {
-                    TextField("+233", text: $countryCode)
-                        .frame(width: 60)
-                        .keyboardType(.phonePad)
-                        .textFieldStyle(.roundedBorder)
-                        .accessibilityLabel("Country Code")
-                    TextField("Enter your mobile number", text: $phoneNumber)
-                        .keyboardType(.phonePad)
-                        .textFieldStyle(.roundedBorder)
-                        .accessibilityLabel("Mobile Number")
+                // Email input
+                TextField("Email", text: $email)
+                    .keyboardType(.emailAddress)
+                    .textFieldStyle(.roundedBorder)
+                    .autocapitalization(.none)
+                    .accessibilityLabel("Email")
+                // Password input
+                SecureField("Password", text: $password)
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityLabel("Password")
+                // Error message
+                if let error = authModel.errorMessage {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
                 }
                 // Sign In button
                 Button(action: {
-                    print("[DEBUG] Sign In tapped. Phone: \(countryCode)\(phoneNumber)")
-                    showDashboard = true
+                    print("[DEBUG] Sign In tapped. Email: \(email)")
+                    isLoading = true
+                    authModel.signIn(email: email, password: password) { success in
+                        isLoading = false
+                        if success {
+                            showDashboard = true
+                        }
+                    }
                 }) {
-                    Text("Sign In")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.purple)
-                        .foregroundColor(.white)
-                        .cornerRadius(12)
+                    if isLoading {
+                        ProgressView()
+                    } else {
+                        Text("Sign In")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.purple)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                    }
                 }
                 .padding(.top)
                 .accessibilityLabel("Sign In")
@@ -62,7 +78,7 @@ struct SignInView: View {
                 ContentView()
             }
             .navigationDestination(isPresented: $showSignUp) {
-                SignUpView()
+                SignUpView(authModel: authModel)
             }
         }
     }
@@ -70,5 +86,5 @@ struct SignInView: View {
 
 // MARK: - Preview
 #Preview {
-    SignInView()
+    SignInView(authModel: AuthViewModel())
 } 
