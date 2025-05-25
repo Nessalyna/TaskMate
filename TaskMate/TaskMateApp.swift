@@ -9,9 +9,13 @@ import SwiftUI
 
 @main
 struct TaskMateApp: App {
+    // MARK: - Properties
+    
+    // MARK: - Body
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(\.colorScheme, .light) // Default to light mode
         }
     }
 }
