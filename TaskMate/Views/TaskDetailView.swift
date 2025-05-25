@@ -2,23 +2,13 @@ import SwiftUI
 
 struct TaskDetailView: View {
     // MARK: - Properties
-    let task: DashboardViewModel.Task
-    @State private var comments: [Comment] = [
-        Comment(id: UUID(), user: "Nessa", text: "Started working on this!", timestamp: Date().addingTimeInterval(-3600)),
-        Comment(id: UUID(), user: "Ben", text: "@Nessa Let me know if you need help.", timestamp: Date().addingTimeInterval(-1800))
-    ]
+    let task: Task // Use global Task
+    @State private var comments: [Comment] = [] // Use global Comment
     @State private var newComment: String = ""
     @State private var showMentionSuggestions = false
     @State private var mentionQuery = ""
     // Placeholder users for mention
     let users = ["Nessa", "Ben", "Nana", "Vanessa"]
-    
-    struct Comment: Identifiable {
-        let id: UUID
-        let user: String
-        let text: String
-        let timestamp: Date
-    }
     
     // MARK: - Body
     var body: some View {
@@ -30,7 +20,7 @@ struct TaskDetailView: View {
                         Text(task.title)
                             .font(.title2)
                             .fontWeight(.bold)
-                        Text(task.project)
+                        Text(task.projectId) // Show projectId or resolve to project name if needed
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         Text(task.dueDate, style: .date)
@@ -41,15 +31,15 @@ struct TaskDetailView: View {
                     // Comments Section
                     Text("Comments")
                         .font(.headline)
-                    ForEach(comments.sorted { $0.timestamp < $1.timestamp }) { comment in
+                    ForEach(comments.sorted { $0.timestamp < $1.timestamp }, id: \ .id) { comment in
                         HStack(alignment: .top, spacing: 12) {
                             Circle()
                                 .fill(Color.purple.opacity(0.7))
                                 .frame(width: 32, height: 32)
-                                .overlay(Text(String(comment.user.prefix(1))).foregroundColor(.white))
+                                .overlay(Text(String(comment.userId.prefix(1))).foregroundColor(.white))
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack {
-                                    Text(comment.user)
+                                    Text(comment.userId)
                                         .fontWeight(.semibold)
                                     Text(comment.timestamp, style: .time)
                                         .font(.caption2)
@@ -86,7 +76,7 @@ struct TaskDetailView: View {
                 Button(action: {
                     guard !newComment.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
                     print("[DEBUG] New comment added: \(newComment)")
-                    comments.append(Comment(id: UUID(), user: "Nessa", text: newComment, timestamp: Date()))
+                    comments.append(Comment(id: UUID().uuidString, userId: "Nessa", text: newComment, timestamp: Date()))
                     newComment = ""
                 }) {
                     Image(systemName: "paperplane.fill")

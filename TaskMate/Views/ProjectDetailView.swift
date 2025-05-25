@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ProjectDetailView: View {
     // MARK: - Properties
-    let project: DashboardViewModel.Project
+    let project: Project // Use global Project
     @State private var showEditModal = false
     @State private var showAddTaskModal = false
     @State private var showKanban = false
@@ -14,13 +14,13 @@ struct ProjectDetailView: View {
                 // Project header
                 HStack(alignment: .center, spacing: 16) {
                     Circle()
-                        .fill(project.color)
+                        .fill(Color(hex: project.colorHex))
                         .frame(width: 48, height: 48)
                     VStack(alignment: .leading) {
                         Text(project.name)
                             .font(.title)
                             .fontWeight(.bold)
-                        Text(project.dueDate, style: .date)
+                        Text(project.endDate, style: .date)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
@@ -37,15 +37,16 @@ struct ProjectDetailView: View {
                 }
                 // Progress bar
                 VStack(alignment: .leading, spacing: 4) {
-                    ProgressView(value: project.progress)
-                        .accentColor(project.color)
-                    Text("\(Int(project.progress * 100))% Complete")
+                    let progress = project.tasks.isEmpty ? 0 : Double(project.tasks.filter { $0.isComplete }.count) / Double(project.tasks.count)
+                    ProgressView(value: progress)
+                        .accentColor(Color(hex: project.colorHex))
+                    Text("\(Int(progress * 100))% Complete")
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
-                // Description
-                if !project.name.isEmpty {
-                    Text(project.name)
+                // Details
+                if !project.details.isEmpty {
+                    Text(project.details)
                         .font(.headline)
                 }
                 // Members (placeholder chips)
@@ -94,7 +95,7 @@ struct ProjectDetailView: View {
                         .cornerRadius(12)
                 } else {
                     VStack(alignment: .leading, spacing: 12) {
-                        ForEach(project.tasks) { task in
+                        ForEach(project.tasks, id: \ .id) { task in
                             HStack {
                                 Text(task.title)
                                 Spacer()
@@ -132,6 +133,29 @@ struct ProjectDetailView: View {
         }
     }
 }
+
+// MARK: - Color Helper
+//extension Color {
+//    // Helper to create Color from hex string
+//    init(hex: String) {
+//        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+//        var int: UInt64 = 0
+//        Scanner(string: hex).scanHexInt64(&int)
+//        let a, r, g, b: UInt64
+//        switch hex.count {
+//        case 3: // RGB (12-bit)
+//            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+//        case 6: // RGB (24-bit)
+//            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+//        case 8: // ARGB (32-bit)
+//            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+//        default:
+//            (a, r, g, b) = (255, 0, 0, 0)
+//        }
+//     
+//      
+//    }
+//}
 
 // MARK: - Preview
 #Preview {

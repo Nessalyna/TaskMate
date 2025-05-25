@@ -97,37 +97,48 @@ struct ContentView: View {
             .navigationDestination(for: String.self) { route in
                 if route == "newTask" {
                     TaskEditView(onSave: { title, type, description, start, due, priority, assignee, attachments in
-                        let newTask = DashboardViewModel.Task(
-                            id: UUID(),
+                        let newTask = Task(
+                            id: UUID().uuidString,
                             title: title,
-                            project: type,
+                            details: description,
+                            projectId: type, // Should resolve to projectId if needed
+                            assigneeId: assignee,
+                            startDate: start,
                             dueDate: due,
-                            isComplete: false
+                            priority: priority,
+                            isComplete: false,
+                            subtasks: [],
+                            comments: [],
+                            attachments: attachments,
+                            createdAt: Date()
                         )
                         model.addTask(newTask)
-                        navigationPath.removeLast()
-                    })
+                        navigationPath = NavigationPath()
+                    }, onCancel: { navigationPath = NavigationPath() })
                 } else if route == "newProject" {
                     ProjectEditView(onSave: { name, description, start, end, members in
-                        let newProject = DashboardViewModel.Project(
-                            id: UUID(),
+                        let newProject = Project(
+                            id: UUID().uuidString,
                             name: name,
-                            color: .yellow,
-                            progress: 0.0,
-                            dueDate: end,
-                            tasks: []
+                            details: description,
+                            colorHex: "FFD600", // Default yellow
+                            startDate: start,
+                            endDate: end,
+                            members: members,
+                            tasks: [],
+                            createdAt: Date()
                         )
                         model.addProject(newProject)
-                        navigationPath.removeLast()
-                    })
+                        navigationPath = NavigationPath()
+                    }, onCancel: { navigationPath = NavigationPath() })
                 } else {
                     EmptyView()
                 }
             }
-            .navigationDestination(for: DashboardViewModel.Project.self) { project in
+            .navigationDestination(for: Project.self) { project in
                 ProjectDetailView(project: project)
             }
-            .navigationDestination(for: DashboardViewModel.Task.self) { task in
+            .navigationDestination(for: Task.self) { task in
                 TaskDetailView(task: task)
             }
             .sheet(isPresented: $showProfile) {

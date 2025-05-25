@@ -2,7 +2,6 @@ import SwiftUI
 
 struct TaskEditView: View {
     // MARK: - Properties
-    @Environment(\.dismiss) private var dismiss
     @State var title: String = ""
     @State var type: String = "Personal"
     @State var description: String = ""
@@ -14,70 +13,68 @@ struct TaskEditView: View {
     @State var showValidationError = false
     var onSave: ((String, String, String, Date, Date, String, String, [String]) -> Void)?
     var isEditing: Bool = false
+    var onCancel: (() -> Void)? = nil
     
     // MARK: - Body
     var body: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text("Task Info")) {
-                    TextField("Task Title", text: $title)
-                        .accessibilityLabel("Task Title")
-                    if showValidationError && title.isEmpty {
-                        Text("Task title is required.")
-                            .foregroundColor(.red)
-                            .font(.caption)
-                    }
-                    Picker("Task Type", selection: $type) {
-                        Text("Personal").tag("Personal")
-                        Text("School Project").tag("School Project")
-                        Text("Work").tag("Work")
-                    }
-                    .accessibilityLabel("Task Type")
-                    TextField("Description", text: $description)
-                        .accessibilityLabel("Description")
+        Form {
+            Section(header: Text("Task Info")) {
+                TextField("Task Title", text: $title)
+                    .accessibilityLabel("Task Title")
+                if showValidationError && title.isEmpty {
+                    Text("Task title is required.")
+                        .foregroundColor(.red)
+                        .font(.caption)
                 }
-                Section(header: Text("Dates")) {
-                    DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                    DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+                Picker("Task Type", selection: $type) {
+                    Text("Personal").tag("Personal")
+                    Text("School Project").tag("School Project")
+                    Text("Work").tag("Work")
                 }
-                Section(header: Text("Priority & Assignee")) {
-                    Picker("Priority", selection: $priority) {
-                        Text("Low").tag("Low")
-                        Text("Normal").tag("Normal")
-                        Text("High").tag("High")
-                    }
-                    .accessibilityLabel("Priority")
-                    TextField("Assignee (coming soon)", text: $assignee)
-                        .disabled(true)
-                        .accessibilityLabel("Assignee")
+                .accessibilityLabel("Task Type")
+                TextField("Description", text: $description)
+                    .accessibilityLabel("Description")
+            }
+            Section(header: Text("Dates")) {
+                DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
+                DatePicker("Due Date", selection: $dueDate, displayedComponents: .date)
+            }
+            Section(header: Text("Priority & Assignee")) {
+                Picker("Priority", selection: $priority) {
+                    Text("Low").tag("Low")
+                    Text("Normal").tag("Normal")
+                    Text("High").tag("High")
                 }
-                Section(header: Text("Attachments")) {
-                    // Placeholder for attachments
-                    Text("Attachment upload coming soon")
-                        .foregroundColor(.secondary)
+                .accessibilityLabel("Priority")
+                TextField("Assignee (coming soon)", text: $assignee)
+                    .disabled(true)
+                    .accessibilityLabel("Assignee")
+            }
+            Section(header: Text("Attachments")) {
+                // Placeholder for attachments
+                Text("Attachment upload coming soon")
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle(isEditing ? "Edit Task" : "New Task")
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") {
+                    print("[DEBUG] Task creation/edit cancelled")
+                    onCancel?()
                 }
             }
-            .navigationTitle(isEditing ? "Edit Task" : "New Task")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        print("[DEBUG] Task creation/edit cancelled")
-                        dismiss()
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Save") {
+                    if title.isEmpty {
+                        showValidationError = true
+                        print("[DEBUG] Validation failed: Task title is empty")
+                    } else {
+                        print("[DEBUG] Task saved: \(title)")
+                        onSave?(title, type, description, startDate, dueDate, priority, assignee, attachments)
                     }
                 }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        if title.isEmpty {
-                            showValidationError = true
-                            print("[DEBUG] Validation failed: Task title is empty")
-                        } else {
-                            print("[DEBUG] Task saved: \(title)")
-                            onSave?(title, type, description, startDate, dueDate, priority, assignee, attachments)
-                            dismiss()
-                        }
-                    }
-                    .disabled(title.isEmpty)
-                }
+                .disabled(title.isEmpty)
             }
         }
     }
