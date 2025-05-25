@@ -4,7 +4,7 @@ struct VerificationView: View {
     // MARK: - Properties
     @State private var code: [String] = Array(repeating: "", count: 5)
     @FocusState private var focusedIndex: Int?
-    @State private var showDashboard = false
+    var onAuthenticated: (() -> Void)? = nil
     
     // MARK: - Body
     var body: some View {
@@ -39,7 +39,7 @@ struct VerificationView: View {
             // Continue button
             Button(action: {
                 print("[DEBUG] Verification code entered: \(code.joined())")
-                showDashboard = true
+                onAuthenticated?()
             }) {
                 Text("Continue")
                     .font(.headline)
@@ -59,9 +59,6 @@ struct VerificationView: View {
         }
         .padding()
         .background(Color(.systemGroupedBackground))
-        .navigationDestination(isPresented: $showDashboard) {
-            ContentView()
-        }
     }
 }
 

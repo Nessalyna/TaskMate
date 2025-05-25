@@ -7,6 +7,7 @@ struct SignUpView: View {
     @State private var nickname: String = ""
     @State private var showVerification = false
     @State private var showSignIn = false
+    var onAuthenticated: (() -> Void)? = nil
     
     // MARK: - Body
     var body: some View {
@@ -64,7 +65,7 @@ struct SignUpView: View {
             .padding()
             .background(Color(.systemGroupedBackground))
             .navigationDestination(isPresented: $showVerification) {
-                VerificationView()
+                VerificationView(onAuthenticated: onAuthenticated)
             }
             .navigationDestination(isPresented: $showSignIn) {
                 SignInView()

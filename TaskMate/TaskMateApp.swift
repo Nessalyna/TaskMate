@@ -11,15 +11,20 @@ import SwiftUI
 struct TaskMateApp: App {
     // MARK: - Properties
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @AppStorage("isAuthenticated") private var isAuthenticated = false
     
     // MARK: - Body
     var body: some Scene {
         WindowGroup {
-            if hasSeenOnboarding {
+            if !hasSeenOnboarding {
+                OnboardingView()
+            } else if !isAuthenticated {
+                SignUpView(onAuthenticated: {
+                    isAuthenticated = true
+                })
+            } else {
                 ContentView()
                     .environment(\.colorScheme, .light) // Default to light mode
-            } else {
-                OnboardingView()
             }
         }
     }

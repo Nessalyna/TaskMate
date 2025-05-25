@@ -8,7 +8,7 @@ final class DashboardViewModel: ObservableObject {
     var userAvatar: String = "person.crop.circle.fill"
     
     // Project model
-    struct Project: Identifiable {
+    struct Project: Identifiable, Hashable {
         let id: UUID
         let name: String
         let color: Color
@@ -18,7 +18,7 @@ final class DashboardViewModel: ObservableObject {
     }
     
     // Task model
-    struct Task: Identifiable {
+    struct Task: Identifiable, Hashable {
         let id: UUID
         let title: String
         let project: String
